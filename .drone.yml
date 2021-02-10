@@ -10,3 +10,16 @@ pipeline:
       - ${DRONE_REPO_BRANCH}
     when:
       event: push
+
+  print:
+    image: quay.io/ukhomeofficedigital/kd
+    commands:
+      - echo $$docker_username
+      - echo $$docker_password
+
+    secrets:
+      - docker_password
+      - docker_username
+
+    when:
+      event: push
