@@ -1,0 +1,51 @@
+---
+kind: pipeline
+name: dq-haproxy-openssl-sidekick
+type: kubernetes
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build
+  pull: if-not-exists
+  image: plugins/docker
+  settings:
+    force_tag: true
+    registry: quay.io
+    repo: quay.io/ukhomeofficedigital/dq-haproxy-openssl-sidekick
+    tags:
+    - ${DRONE_COMMIT_SHA}
+    - ${DRONE_REPO_BRANCH}
+  environment:
+    DOCKER_PASSWORD:
+      from_secret: docker_password
+    DOCKER_USERNAME:
+      from_secret: docker_username
+  when:
+    event:
+    - push
+
+- name: Anchore Scan
+  image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/anchore-submission:latest
+  pull: always
+  environment:
+    #NOTE: Image name can't be a variable here!
+    IMAGE_NAME: quay.io/ukhomeofficedigital/dq-haproxy-openssl-sidekick:${DRONE_COMMIT_SHA}
+    LOCAL_IMAGE: false
+    SHOW_ALL_VULNERABILITIES: true
+    TOLERATE: medium
+    FAIL_ON_DETECTION: false
+  when:
+    event:
+      - push
+
+services:
+  # - name: docker
+  #   image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/dind
+  - name: anchore-submission-server
+    image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/anchore-submission:latest
+    pull: always
+    commands:
+      - /run.sh server
