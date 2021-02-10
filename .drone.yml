@@ -14,12 +14,12 @@ pipeline:
   print:
     image: quay.io/ukhomeofficedigital/kd
     commands:
-      - echo $$docker_username
-      - echo $$docker_password
+      - echo $$DOCKER_USERNAME
+      - echo $$DOCKER_PASSWORD
 
     secrets:
-      - docker_password
-      - docker_username
+      - DOCKER_USERNAME
+      - DOCKER_PASSWORD
 
     when:
       event: push
